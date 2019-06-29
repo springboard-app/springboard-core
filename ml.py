@@ -18,6 +18,20 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+#dimensionality reduction
+from sklearn.manifold import TSNE
+from sklearn.manifold import MDS
+from sklearn.manifold import Isomap
+from sklearn.manifold import LocallyLinearEmbedding
+from sklearn.manifold import SpectralEmbedding
+from sklearn.decomposition import PCA
+from sklearn.decomposition import IncrementalPCA
+from sklearn.decomposition import KernelPCA
+from sklearn.decomposition import FastICA
+from sklearn.decomposition import FactorAnalysis
+from sklearn.decomposition import TruncatedSVD
+from sklearn.decomposition import NMF
+
 def classify(name,x_train,y_train,x_test = None, y_test = None):
     if name == "Support Vector Machine":
         name = "SVC"
@@ -64,7 +78,7 @@ def dimensionality_reduction(name,x_train,num_components):
     dim_str = name + "(" + num_components + ")"
     dim = eval(dim_str)
     components = dim.fit_transform(x_train)
-    print("Predictive model stored as reg.joblib")
+    print("Components Extracted")
 
 
 if __name__ == '__main__':
