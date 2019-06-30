@@ -1,0 +1,154 @@
+<!doctype html>
+<html>
+<head>
+
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jsPlumb/2.10.1/js/jsplumb.min.js"></script>
+    <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+    <script src="../lib/jquery-ui.min.js"></script>
+    <script src="../lib/jquery.jsPlumb-1.4.1-all-min.js"></script>
+    <script src="../lib/jquery.jsPlumb-1.6.4-min.js"></script> -->
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsPlumb/2.10.1/js/jsplumb.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsPlumb/2.10.1/js/jsplumb.min.js"></script>
+    <script
+    src="https://code.jquery.com/jquery-3.4.1.js"
+    integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU="
+    crossorigin="anonymous"></script>
+
+    <style>
+
+        @import url(http://fonts.googleapis.com/css?family=Montserrat);
+
+        * {
+            font-family: 'Montserrat', sans-serif;
+        }
+        #dropArea {
+            position: relative;
+            resize: both;
+            margin-left: 180px;
+            border: 1px solid #aaaaaa;
+            width: 800px;
+            height: 650px;
+            overflow-x: scroll;
+            overflow-y: scroll;
+        }
+        .title {
+            padding: 10px;
+            cursor: move;
+        }
+        .connector {
+            font-size:10px;
+            text-align: center;
+            width: 100%;
+            height: 20px;
+            background-color: #ffffff;
+            cursor: pointer;
+        }
+        .element {
+            border: 1px solid gray;
+            text-align: center;
+            width: 170px;
+            height: 75px;
+            background-color: lightpink;
+            position: absolute;
+        }
+        .pro {
+            border: 1px solid gray;
+            text-align: center;
+            width: 170px;
+            height: 75px;
+            background-color:  lightpink;
+            position: absolute;
+        }
+        .section {
+            font-size: 12px;
+            text-align: center;
+            font-weight: 200;
+            border: 1px solid black;
+            background-color: #ddddff;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="element" id="cId">
+</div>
+<div id="dropArea">
+</div>
+
+<script>
+
+    jsPlumb.ready(function() {
+
+        jsPlumb.Defaults.Container=$("#dropArea");
+        jsPlumb.Defaults.PaintStyle = { strokeStyle:"palevioletred", lineWidth:2,
+dashstyle: '3 3'};
+        jsPlumb.Defaults.EndpointStyle = { radius:7, fillStyle:"palevioletred" };
+        jsPlumb.importDefaults({Connector : [ "Bezier", { curviness:50 } ]});
+        jsPlumb.setContainer($('#dropArea'));
+        var i = 1;
+        $(".element").draggable        ({
+            helper : 'clone',
+            cursor : 'pointer',
+            tolerance : 'fit',
+            revert : true
+        });
+
+        $("#dropArea").droppable        ({
+            accept: '.element',
+            containment: 'dropArea',
+
+            drop: function (e, ui) {
+                droppedElement = ui.helper.clone();
+                ui.helper.remove();
+                $(droppedElement).removeAttr("class");
+                jsPlumb.repaint(ui.helper);
+
+                var newAgent = $('<div>').attr('id', 'pro' + i).addClass('pro');
+                newAgent.text('Element ' + i);
+                $(droppedElement).draggable({containment: "dropArea"});
+                $('#dropArea').append(newAgent);
+
+                jsPlumb.draggable(newAgent, {
+                    containment: 'parent'                });
+                i++;
+            }
+        });
+
+        $("#dropArea").on('click', '.pro', function (e) {
+            i++;
+            var newState = $('<div>').attr('id', 'state' + i).addClass('section').
+text('Section '+ (i-1));
+
+            var title = $('<div>').addClass('title');
+            var connector = $('<div>').addClass('connector').
+text('Click here to drag');
+
+            newState.css({
+                'top': e.pageY,
+                'left': e.pageX            });
+
+            newState.append(title);
+            newState.append(connector);
+
+            $(this).append(newState);
+
+            jsPlumb.makeTarget(newState, {
+                anchor: 'Continuous'            });
+
+            jsPlumb.makeSource(connector, {
+                anchor: 'Continuous'            });
+
+            newState.dblclick(function (e) {
+                jsPlumb.detachAllConnections($(this));
+                $(this).remove();
+                e.stopPropagation();
+            });
+        });
+    });
+</script>
+</body>
+</html>
