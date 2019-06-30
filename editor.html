@@ -177,7 +177,7 @@
                             console.debug(txt);
                             const dl = confirm(`Your model's accuracy was ${txt}%. Would you like to download the model?`);
                             if (dl) {
-                                const url = firebase.storage().ref(`${projectId}.joblib`).getDownloadURL();
+                                const url = await firebase.storage().ref(`${projectId}.joblib`).getDownloadURL();
                                 window.open(url);
                             }
                             break;
