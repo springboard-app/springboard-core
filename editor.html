@@ -15,7 +15,7 @@
 <body>
 <div class="header">
     <h1 id="project-name">Project</h1>
-    <button id="run">Run Project</button>
+    <button id="run">Train Project</button>
     <button id="save">Save</button>
 </div>
 <div id="project">
@@ -93,6 +93,11 @@
 
     let fields;
 
+
+
+
+
+
     document.querySelector("#file-input").addEventListener("change", function (e) {
         const progressElement = document.getElementById("progress");
         if (e.target.files.length) {
@@ -169,9 +174,10 @@
                 assigned: null,
                 completed: null,
                 projectId,
-                type: "linear-regression"
+                type: type.value
             });
             e.target.style.backgroundColor = "green";
+
         } catch (error) {
             e.target.style.background = "red";
             console.error(error);
@@ -211,8 +217,20 @@
         const user = await firebase.auth.authSignIn;
         await initializeEditor();
     }
-
     start();
+
+
+    db.doc(`projects/${projectId}`).onSnapshot(snapshot => {
+      let dt = snapshot.data()
+      console.log(dt)
+      if (dt.assigned && dt.completed && !dt.errored){
+        firebase.storage().ref().child(projectId + ".joblib").getDownloadURL().then(url => {
+          console.log(url)
+          window.open(url)
+        })
+      }
+
+    })
 </script>
 </body>
 
