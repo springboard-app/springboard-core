@@ -44,7 +44,8 @@
             elements: [],
             name: prompt("Project name (keep it short and memorable)"),
             desc: prompt("Project description"),
-            ids: [firebase.auth().currentUser.uid]
+            ids: [firebase.auth().currentUser.uid],
+            params: {}
         };
         batch.set(projectRef, defaultProject);
         batch.update(userRef, {
@@ -84,12 +85,7 @@
     });
 </script>
 <script>
-    function createProjectElement({
-                                      color,
-                                      name,
-                                      desc,
-                                      id
-                                  }) {
+    function createProjectElement({color, name, desc, id}) {
         const nameElement = document.createElement("h3");
         nameElement.textContent = name;
 
@@ -98,9 +94,10 @@
 
         const deleteElement = document.createElement("i");
         deleteElement.classList.add("fa", "fa-trash");
-        4
+
         deleteElement.addEventListener("click", async e => {
             const batch = firebase.firestore().batch();
+            batch.delete(firebase.firestore().doc(``));
         });
 
         const container = document.createElement("div");
