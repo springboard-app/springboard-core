@@ -21,5 +21,6 @@ body {
 button {
     border: none;
     cursor: pointer;
+    padding: 10px 20px;
     text-transform: uppercase;
 }
