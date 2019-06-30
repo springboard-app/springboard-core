@@ -97,7 +97,8 @@
 
         deleteElement.addEventListener("click", async e => {
             const batch = firebase.firestore().batch();
-            batch.delete(firebase.firestore().doc(``));
+            batch.delete(firebase.firestore().doc(`projects/${id}`));
+            batch.update(firebase.firestore().doc(`projects/${id}`));
         });
 
         const container = document.createElement("div");

@@ -68,9 +68,6 @@
                   <option value="Ada Boost Classifier"> Ada Boost Classifier</option>
                   <option value="Quadratic Discriminant Analysis"> Quadratic Discriminant Analysis</option>
                   <option value="K Neighbors Classifier">"K Neighbors Classifier"</option>
-
-
-
                 </select>
             </div>
         </div>
@@ -92,11 +89,6 @@
     const type = document.getElementById('type')
 
     let fields;
-
-
-
-
-
 
     document.querySelector("#file-input").addEventListener("change", function (e) {
         const progressElement = document.getElementById("progress");
@@ -170,17 +162,35 @@
 
     document.querySelector("#run").addEventListener("click", async e => {
         try {
-            await db.collection(`jobs`).add({
-                assigned: null,
-                completed: null,
-                projectId,
-                type: type.value
-            });
-            e.target.style.backgroundColor = "green";
+            const snapshot = await db.collection(`offloaders`).get();
+            for (let offloader of snapshot.docs.map(doc => doc.data())) {
+                try {
+                    const response = await fetch(offloader.httpEndpoint);
+                    const text = await response.text();
+                    if (text.match(/Springboard offloader (.+), reporting for duty!/)) {
+                        const response = await fetch(offloader.httpEndpoint, {
+                            body: JSON.stringify({projectId}),
+                            method: "POST"
+                        });
+                        if (response.ok) {
+                            const txt = await response.text();
+                            console.debug(txt);
+                            const dl = confirm(`Your model's accuracy was ${txt}%. Would you like to download the model?`);
+                            if (dl) {
+                                const url = firebase.storage().ref(`${projectId}.joblib`).getDownloadURL();
+                                window.open(url);
+                            }
+                            break;
+                        }
+                    } else {
+                        console.warn(offloader, "was down");
+                    }
+                } catch (err) {
 
-        } catch (error) {
-            e.target.style.background = "red";
-            console.error(error);
+                }
+            }
+        } catch (err) {
+            console.error(err);
         }
     });
 
@@ -207,7 +217,7 @@
             document.querySelector("#output").append(...outputOptions);
             inputs.value = params.inputs;
             output.value = params.output;
-            type.value = params.type
+            type.value = params.type;
             trainingPercent.value = params.trainingPercent;
             return snapshot;
         });
@@ -218,19 +228,6 @@
         await initializeEditor();
     }
     start();
-
-
-    db.doc(`projects/${projectId}`).onSnapshot(snapshot => {
-      let dt = snapshot.data()
-      console.log(dt)
-      if (dt.assigned && dt.completed && !dt.errored){
-        firebase.storage().ref().child(projectId + ".joblib").getDownloadURL().then(url => {
-          console.log(url)
-          window.open(url)
-        })
-      }
-
-    })
 </script>
 </body>
 
