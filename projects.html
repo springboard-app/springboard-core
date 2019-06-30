@@ -69,7 +69,6 @@
             const snapshot = await transaction.get(projectRef);
             if (snapshot.exists === false) {
                 throw "Project does not exist!";
-                return;
             }
             const {name, desc} = snapshot.data();
             transaction.update(projectRef, {

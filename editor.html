@@ -163,6 +163,21 @@
         }, 1000);
     });
 
+    document.querySelector("#run").addEventListener("click", async e => {
+        try {
+            await db.collection(`jobs`).add({
+                assigned: null,
+                completed: null,
+                projectId,
+                type: "linear-regression"
+            });
+            e.target.style.backgroundColor = "green";
+        } catch (error) {
+            e.target.style.background = "red";
+            console.error(error);
+        }
+    });
+
     const projectId = location.hash.slice(1);
     const db = firebase.firestore();
     async function initializeEditor() {
