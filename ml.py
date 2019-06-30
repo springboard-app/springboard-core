@@ -116,4 +116,7 @@ if __name__ == '__main__':
             print(test.predict([[float(num)]]))
             num = input("Enter a number: \n")
     elif type == "D":
-        
+        test = dimensionality_reduction(input("Enter Dimensionality Reduction Algorithm: "),[[0],[121.75], [365], [730]],[2])
+        while(True):
+            print(test.predict([[float(num)]]))
+            num = input("Enter a number: \n")
