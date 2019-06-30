@@ -1,0 +1,30 @@
+#projects {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 0 -10px;
+}
+
+.project {
+    border: 1px solid #eeeeee;
+    color: black;
+    display: inline-block;
+    margin: 5px 10px;
+    padding: 10px 30px;
+    text-decoration: none;
+    width: calc(33% - 20px);
+}
+
+.project:hover {
+    box-shadow: 0 0 25px #eeeeee;
+}
+
+body {
+    padding: 50px;
+}
+
+#new-project {
+    background-color: #1b8a1b;
+    color: white;
+    margin: 10px 0;
+    padding: 10px 20px;
+}

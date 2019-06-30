@@ -13,18 +13,20 @@
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="css/springboard.css">
+    <link rel="stylesheet" href="css/projects.css">
 </head>
 
 <body>
     <!--[if lt IE 7]>
             <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="#">upgrade your browser</a> to improve your experience.</p>
         <![endif]-->
-    <h1>Projects</h1>
-    <div id="projects">
-        <p>No projects yet! Try and create one!</p>
+    <div class="header">
+        <h1>Projects</h1>
+        <button id="new-project">New Project</button>
     </div>
-
-    <button id="new-project">New Project</button>
+    <div id="projects">
+        <p style="margin: 10px">No projects yet! Try and create one!</p>
+    </div>
 
     <!-- The core Firebase JS SDK is always required and must be listed first -->
     <script src="https://www.gstatic.com/firebasejs/6.2.4/firebase-app.js"></script>
@@ -34,7 +36,9 @@
     <script src="js/springboard-route-guard.js"></script>
     <script>
         document.querySelector("#new-project").addEventListener("click", async e => {
-            const {uid} = firebase.auth().currentUser;
+            const {
+                uid
+            } = firebase.auth().currentUser;
             const projectRef = firebase.firestore().collection('projects').doc();
             const userRef = firebase.firestore().doc(`users/${uid}`);
             const batch = firebase.firestore().batch();
@@ -56,38 +60,53 @@
         });
     </script>
     <script>
-        function createProjectElement({ name, desc, id }) {
-            const nameElement = document.createElement("h2");
+        function createProjectElement({
+            name,
+            desc,
+            id
+        }) {
+            const nameElement = document.createElement("h3");
             nameElement.textContent = name;
 
             const description = document.createElement("p");
             description.textContent = desc;
 
             const container = document.createElement("div");
-            container.classList.add("project");
-            container.append(name, description);
-            return container;
+            container.append(nameElement, description);
+
+            const link = document.createElement("a");
+            link.classList.add("project");
+            link.href = `editor.html#${id}`;
+            link.append(container);
+            return link;
         }
 
         async function getProjects() {
-            const {email, uid} = firebase.auth().currentUser;
+            const {
+                email,
+                uid
+            } = firebase.auth().currentUser;
             const defaultProfile = {
                 name: email,
                 projects: []
             };
             const profileRef = firebase.firestore().doc(`users/${uid}`);
-            const snapshot = await profileRef.get();
-            if (snapshot.exists === false) {
-                profileRef.set(defaultProfile);
-            }
-            const { name, projects } = snapshot.data() || defaultProfile;
-            const projectsElement = document.querySelector("#projects");
-            projects.map(createProjectElement).forEach(element => {
-                projectsElement.append(element)
+            profileRef.onSnapshot(snapshot => {
+                if (snapshot.exists === false) {
+                    profileRef.set(defaultProfile);
+                }
+                const {
+                    name,
+                    projects
+                } = snapshot.data() || defaultProfile;
+                const projectsElement = document.querySelector("#projects");
+                while (projectsElement.firstChild) {
+                    projectsElement.removeChild(projectsElement.firstChild);
+                }
+                projects.map(createProjectElement).forEach(element => {
+                    projectsElement.append(element)
+                });
             });
-            if (projects.length >= 1) {
-                document.querySelector("#projects p").style.display = 'none';
-            }
         }
 
         async function start() {
