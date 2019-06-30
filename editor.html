@@ -46,6 +46,33 @@
                 </label>
                 <input id="training" type="range" min="0" max="100" value="80">
             </div>
+            <div>
+                <label for="type">
+                    Type
+                </label>
+                <select  id="type" name="">
+                  <option value="Linear Regression">Linear Regression</option>
+                  <option value="Support Vector Regressor">Support Vector Regressor </option>
+                  <option value="Random Forest Regressor">Random Forest Regressor </option>
+                  <option value="Ridge">Ridge</option>
+                  <option value="Decision Tree Regressor">Decision Tree Regressor</option>
+                  <option value="Support Vector Classifier">Support Vector Classifier </option>
+                  <option value="Logistic Regression">Logistic Regression </option>
+                  <option value="Support Vector Regressor">Support Vector Regressor </option>
+                  <option value="Neural Network"> Neural Network</option>
+                  <option value="Naive Bayes">Naive Bayes</option>
+                  <option value="Gaussian Process Classifier"> Gaussian Process Classifier</option>
+                  <option value="RBF"> RBF</option>
+                  <option value="Decision Tree Classifier">Decision Tree Classifier</option>
+                  <option value="Random Forest Classifier"> Random Forest Classifier</option>
+                  <option value="Ada Boost Classifier"> Ada Boost Classifier</option>
+                  <option value="Quadratic Discriminant Analysis"> Quadratic Discriminant Analysis</option>
+                  <option value="K Neighbors Classifier">"K Neighbors Classifier"</option>
+
+
+
+                </select>
+            </div>
         </div>
     </div>
 </div>
@@ -62,6 +89,7 @@
     const inputs = document.querySelector("#inputs");
     const output = document.querySelector("#output");
     const trainingPercent = document.querySelector("#training");
+    const type = document.getElementById('type')
 
     let fields;
 
@@ -121,7 +149,8 @@
                     fields: fields,
                     inputs: inputs.value,
                     output: output.value,
-                    trainingPercent: parseInt(trainingPercent.value)
+                    trainingPercent: parseInt(trainingPercent.value),
+                    type:type.value
                 }
             });
             e.target.style.background = "green";
@@ -157,6 +186,7 @@
             document.querySelector("#output").append(...outputOptions);
             inputs.value = params.inputs;
             output.value = params.output;
+            type.value = params.type
             trainingPercent.value = params.trainingPercent;
             return snapshot;
         });
