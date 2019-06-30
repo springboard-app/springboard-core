@@ -50,7 +50,7 @@
             const batch = firebase.firestore().batch();
             const defaultProject = {
                 elements: [],
-                name: psrompt("Project name (keep it short and memorable)"),
+                name: prompt("Project name (keep it short and memorable)"),
                 desc: prompt("Project description"),
                 ids: [firebase.auth().currentUser.uid]
             };
