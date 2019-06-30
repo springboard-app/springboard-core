@@ -79,7 +79,7 @@ def dimensionality_reduction(name,x_train,num_components):
         name = "IncrementalPCA"
     elif name == "Kernel Principle Component Analysis"
         name = "KernalPCA"
-    elif name == "Latent Semantic Analysis"
+    elif name == "Truncated Singular Value Decomposition"
         name = "TruncatedSVD"
     elif name == "Locally Linear Embedding":
         name = "LocallyLinearEmbedding"
