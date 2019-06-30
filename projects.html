@@ -19,12 +19,83 @@
     <!--[if lt IE 7]>
             <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="#">upgrade your browser</a> to improve your experience.</p>
         <![endif]-->
-    <button class="google sign-in-provider">Sign in with Google</button>
+    <h1>Projects</h1>
+    <div id="projects">
+        <p>No projects yet! Try and create one!</p>
+    </div>
+
+    <button id="new-project">New Project</button>
+
     <!-- The core Firebase JS SDK is always required and must be listed first -->
     <script src="https://www.gstatic.com/firebasejs/6.2.4/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/6.2.4/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/6.2.4/firebase-firestore.js"></script>
     <script src="js/springboard.js"></script>
     <script src="js/springboard-route-guard.js"></script>
+    <script>
+        document.querySelector("#new-project").addEventListener("click", async e => {
+            const {uid} = firebase.auth().currentUser;
+            const projectRef = firebase.firestore().collection('projects').doc();
+            const userRef = firebase.firestore().doc(`users/${uid}`);
+            const batch = firebase.firestore().batch();
+            const defaultProject = {
+                elements: [],
+                name: "New Project",
+                desc: "An awesome project"
+            };
+            batch.set(projectRef, defaultProject);
+            batch.update(userRef, {
+                projects: firebase.firestore.FieldValue.arrayUnion({
+                    name: defaultProject.name,
+                    desc: defaultProject.desc,
+                    id: projectRef.id
+                })
+            });
+            await batch.commit();
+            console.log("Created a new project");
+        });
+    </script>
+    <script>
+        function createProjectElement({ name, desc, id }) {
+            const nameElement = document.createElement("h2");
+            nameElement.textContent = name;
+
+            const description = document.createElement("p");
+            description.textContent = desc;
+
+            const container = document.createElement("div");
+            container.classList.add("project");
+            container.append(name, description);
+            return container;
+        }
+
+        async function getProjects() {
+            const {email, uid} = firebase.auth().currentUser;
+            const defaultProfile = {
+                name: email,
+                projects: []
+            };
+            const profileRef = firebase.firestore().doc(`users/${uid}`);
+            const snapshot = await profileRef.get();
+            if (snapshot.exists === false) {
+                profileRef.set(defaultProfile);
+            }
+            const { name, projects } = snapshot.data() || defaultProfile;
+            const projectsElement = document.querySelector("#projects");
+            projects.map(createProjectElement).forEach(element => {
+                projectsElement.append(element)
+            });
+            if (projects.length >= 1) {
+                document.querySelector("#projects p").style.display = 'none';
+            }
+        }
+
+        async function start() {
+            const user = await firebase.auth.authSignIn;
+            await getProjects(user);
+        }
+        start();
+    </script>
 </body>
 
 </html>

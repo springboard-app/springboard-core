@@ -26,9 +26,7 @@
     <script src="js/springboard.js"></script>
     <script>
         firebase.auth().onAuthStateChanged(user => {
-            if (user === null) {
-                location.replace("index.html");
-            } else {
+            if (user) {
                 location.replace("projects.html");
             }
         });
