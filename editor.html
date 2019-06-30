@@ -1,43 +1,46 @@
 <!doctype html>
 <html>
-<head>
-<title>Editor</title>
-<script src="https://www.gstatic.com/firebasejs/6.2.4/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/6.2.4/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/6.2.4/firebase-firestore.js"></script></head>
-<style>
-body {
-  padding: 1em
-}
 
-.top {
-  padding-bottom: 1em;
-}
-.step{
-  border: .1em solid #ccc;
-  border-radius: 1em;
-  padding: 1em;
-  margin-bottom:1em;
-}
+<head>
+  <title>Editor</title>
+  <script src="https://www.gstatic.com/firebasejs/6.2.4/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/6.2.4/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/6.2.4/firebase-firestore.js"></script>
+</head>
+<style>
+  body {
+    padding: 1em
+  }
+
+  .top {
+    padding-bottom: 1em;
+  }
+
+  .step {
+    border: .1em solid #ccc;
+    border-radius: 1em;
+    padding: 1em;
+    margin-bottom: 1em;
+  }
 </style>
-<link href="css/springboard.css" rel="stylesheet"> </link>
+<link href="css/springboard.css" rel="stylesheet">
+</link>
 
 
 <body>
-<div class = "top">
-  <select id="sel">
-    <option value="Data">Data</option>
-    <option value="Process">Process</option>
-    <option value="Dimensionality Reduction"> Dimenisonality Reduction </option>
-    <option value="Classifier">Classify</option>
-    <option value="Regressor">Regression</option>
+  <header>
+    <select id="sel">
+      <option value="Data">Data</option>
+      <option value="Process">Process</option>
+      <option value="Dimensionality Reduction"> Dimenisonality Reduction </option>
+      <option value="Classifier">Classify</option>
+      <option value="Regressor">Regression</option>
+    </select>
 
-  </select>
+    <button type="submit" name="button" onclick="newStep(document.getElementById('sel').value)">Submit</button>
+  </header>
 
-  <button type="submit" name="button" onclick="newStep(document.getElementById('sel').value)">Submit</button>
-</div>
-
-  <div id = "section">
+  <div id="steps">
   </div>
 
 
@@ -45,100 +48,85 @@ body {
   <script src="js/springboard-route-guard.js" charset="utf-8"></script>
 
   <script type="text/javascript">
-  function initEditor(){
-    firebase.firestore().doc("projects/" + location.hash.slice(1)).onSnapshot(function (snapshot) {
-      console.debug(snapshot.data())
-    })
-  }
-  async function start(){
-    const user = await firebase.auth.authSignIn;
-    await initEditor();
-    var section = document.getElementById("section")
-}
-    function newStep(name)
-    {
-      var step = document.createElement("div");
-      step.id = name
-      step.className = "step"
-      var heading = document.createElement("h3");
-      var node = document.createTextNode(name);
-      heading.appendChild(node);
-      step.appendChild(heading)
-      section.appendChild(step)
-      inputs = generateStepInputs(name)
-      section.append(...inputs)
-
-    }
-  const data = [{
-    label: "Data",
-    type: "file"
-  }];
-  const classifier = [
-    {
-      label:"Classifier",
-      type:"select",
-      options:["Support Vector Machine","Neural Network","Naive Bayes","Gaussian Process Classifier","RBF","Decision Tree Classifier","Random Forest Classifier", "Ada Boost Classifier","Quadratic Discriminant Analysis","K Neighbors Classifier"]
-    }
-  ]
-  const regressor = [
-    {
-      label:"Regress",
-      type:"select",
-      options:["Support Vector Machine","Neural Network","Random Forest Regressor","Linear Regression","Ridge","Decision Tree Regressor"]
-
-    }
-  ]
-  const reducer = [
-    {
-      label:"Dimenisonality Reduction",
-      type:"select",
-      options: ["test1","test2"]
-    }
-  ]
-
-    const stepMap = {
-    Data: data,
-    Classifier:classifier,
-    Regressor:regressor,
-    "Dimenisonality Reduction":reducer
-  };
-  //dg
-
-  const generateStepInputs = function(stepValue) {
-    return stepMap[stepValue].map(desc => {
-      if (desc.label) {
-        const label = document.createElement("label")
-        label.textContent = desc.label
-      }
-      var inpt;
-      if (desc.type == "select")
-      {
-      inpt  = document.createElement("select")
-      // for (i = 0; i<desc.options.length; i++){
-      //   option = document.createElement("option")
-      //   option.value = desc.options[i]
-      //   node = document.createTextNode(desc.options[i])
-      //   option.appendChild(node)
-      //   inpt.appendChild(option)
-      // }
-      desc.options.forEach(option => {
-        const optionElement = document.createElement("option");
-        optionElement.textContent = optionElement.value = option;
-        inpt.append(optionElement);
+    function initEditor() {
+      firebase.firestore().doc("projects/" + location.hash.slice(1)).onSnapshot(function (snapshot) {
+        console.debug(snapshot.data())
       });
     }
-      else {
-      inpt = document.createElement("input");
+    async function start() {
+      const user = await firebase.auth.authSignIn;
+      await initEditor();
+      var steps = document.getElementById("steps");
     }
-      Object.assign(inpt, desc);
-      const fragment = document.createDocumentFragment()
-      fragment.append(desc.label,inpt)
-      return fragment
-    });
-  }
+    function newStep(name) {
+      var step = document.createElement("div");
+      step.id = name
+      step.classList.add("step");
+
+      var heading = document.createElement("h3");
+      heading.textContent = name;
+
+      step.append(heading, ...generateStepInputs(name))
+      steps.append(step);
+    }
+
+    const stepMap = {
+      Data: [{
+        label: "Data",
+        type: "file"
+      }],
+      Classifier: [
+        {
+          label: "Classifier",
+          type: "select",
+          options: ["Support Vector Machine", "Neural Network", "Naive Bayes", "Gaussian Process Classifier", "RBF", "Decision Tree Classifier", "Random Forest Classifier", "Ada Boost Classifier", "Quadratic Discriminant Analysis", "K Neighbors Classifier"]
+        }
+      ],
+      Regressor: [
+        {
+          label: "Regress",
+          type: "select",
+          options: ["Support Vector Machine", "Neural Network", "Random Forest Regressor", "Linear Regression", "Ridge", "Decision Tree Regressor"]
+
+        }
+      ],
+      "Dimensionality Reduction": [
+        {
+          label: "Dimensionality Reduction",
+          type: "select",
+          options: ["test1", "test2"]
+        }
+      ]
+    };
+
+    const generateStepInputs = function (stepValue) {
+      return stepMap[stepValue].map(desc => {
+        if (desc.label) {
+          const label = document.createElement("label")
+          label.textContent = desc.label
+        }
+        var inpt;
+        if (desc.type == "select") {
+          inpt = document.createElement("select")
+          desc.options.forEach(option => {
+            const optionElement = document.createElement("option");
+            optionElement.textContent = optionElement.value = option;
+            inpt.append(optionElement);
+          });
+        }
+        else {
+          inpt = document.createElement("input");
+          Object.assign(inpt, desc);
+        }
+        const fragment = document.createDocumentFragment()
+        fragment.append(desc.label, inpt)
+        return fragment
+      });
+    }
   </script>
 
 
 
 </body>
+
 </html>

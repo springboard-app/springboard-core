@@ -24,7 +24,7 @@
     <div class="header">
         <h1>Projects</h1>
         <button id="new-project">New Project</button>
-        <button id="add-project">Add Project</button>
+        <button id="add-project">Import Project</button>
     </div>
     <div id="projects">
         <p style="margin: 10px">No projects yet! Try and create one!</p>
@@ -50,7 +50,7 @@
             const batch = firebase.firestore().batch();
             const defaultProject = {
                 elements: [],
-                name: prompt("Project name (keep it short and memorable)"),
+                name: psrompt("Project name (keep it short and memorable)"),
                 desc: prompt("Project description"),
                 ids: [firebase.auth().currentUser.uid]
             };
