@@ -18,6 +18,22 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+#dimensionality reduction
+from sklearn.manifold import TSNE
+from sklearn.manifold import MDS
+from sklearn.manifold import Isomap
+from sklearn.manifold import LocallyLinearEmbedding
+from sklearn.manifold import SpectralEmbedding
+from sklearn.decomposition import PCA
+from sklearn.decomposition import IncrementalPCA
+from sklearn.decomposition import KernelPCA
+from sklearn.decomposition import FastICA
+from sklearn.decomposition import FactorAnalysis
+from sklearn.decomposition import TruncatedSVD
+from sklearn.decomposition import NMF
+
+from tempfile import TemporaryFile
+
 def classify(name,x_train,y_train,x_test = None, y_test = None):
     if name == "Support Vector Machine":
         name = "SVC"
@@ -55,29 +71,52 @@ def regression(name,x_train,y_train, x_test = None, y_test = None):
 def dimensionality_reduction(name,x_train,num_components):
     if name == "T-SNE":
         name = "TSNE"
+    elif name == "Principle Component Analysis"
+        name = "PCA"
+    elif name == "Fast Independent Component Analysis"
+        name = "FastICA"
+    elif name == "Incremental Principle Component Analysis"
+        name = "IncrementalPCA"
+    elif name == "Kernel Principle Component Analysis"
+        name = "KernalPCA"
+    elif name == "Truncated Singular Value Decomposition"
+        name = "TruncatedSVD"
     elif name == "Locally Linear Embedding":
         name = "LocallyLinearEmbedding"
+    elif name == "Non-Negative Matrix Factorization"
+        name = "NMF"
+    elif name == "Multidimensional Scaling"
+        name = "MDS"
+    elif name == "Spectral Embedding"
+        name = "SpectralEmbedding"
+    elif name == "Factor Analysis"
+        name = "FactorAnalysis"
     else:
         name = name.replace(" ","")
-
 
     dim_str = name + "(" + num_components + ")"
     dim = eval(dim_str)
     components = dim.fit_transform(x_train)
-    print("Predictive model stored as reg.joblib")
+    np.save("components.npy",components)
+    print("Components Extracted and saved")
 
 
 if __name__ == '__main__':
-    type = input("C or R:\n")
+    type = input("C or R or D:\n")
     if type == "C":
         test = classify(input("Enter Classifier: "),[[-1],[-2],[-3],[-0.001],[0.001],[1],[2],[3],[4],[5]],[0,0,0,0,1,1,1,1,1,1])
         num = input("Enter a number: \n")
         while(True):
             print(test.predict([[float(num)]]))
             num = input("Enter a number: \n")
-    else:
+    elif type == "R":
         test = regression(input("Enter Regression Algorithm: "),[[0],[121.75], [365], [730]],[0,.5,1,2])
         num = input("Enter a number: \n")
+        while(True):
+            print(test.predict([[float(num)]]))
+            num = input("Enter a number: \n")
+    elif type == "D":
+        test = dimensionality_reduction(input("Enter Dimensionality Reduction Algorithm: "),[[0],[121.75], [365], [730]],[2])
         while(True):
             print(test.predict([[float(num)]]))
             num = input("Enter a number: \n")
