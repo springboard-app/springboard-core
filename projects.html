@@ -1,11 +1,5 @@
 <!DOCTYPE html>
-<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
-<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
-<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
-<!--[if gt IE 8]><!-->
-<html class="no-js">
-<!--<![endif]-->
-
+<html lang="en">
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -14,148 +8,148 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="css/springboard.css">
     <link rel="stylesheet" href="css/projects.css">
+    <!--suppress JSUnresolvedLibraryURL -->
     <script src="https://kit.fontawesome.com/a31215805a.js"></script>
 </head>
 
 <body>
-    <!--[if lt IE 7]>
-            <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="#">upgrade your browser</a> to improve your experience.</p>
-        <![endif]-->
-    <div class="header">
-        <h1>Projects</h1>
-        <button id="new-project">New Project</button>
-        <button id="add-project">Import Project</button>
-    </div>
-    <div id="projects">
-        <p style="margin: 10px">No projects yet! Try and create one!</p>
-    </div>
+<div class="header">
+    <h1>Projects</h1>
+    <button id="new-project">New Project</button>
+    <button id="add-project">Import Project</button>
+</div>
+<div id="projects">
+    <p style="margin: 10px">No projects yet! Try and create one!</p>
+</div>
 
-    <!-- The core Firebase JS SDK is always required and must be listed first -->
-    <script src="https://www.gstatic.com/firebasejs/6.2.4/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/6.2.4/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/6.2.4/firebase-firestore.js"></script>
-    <script src="js/springboard.js"></script>
-    <script src="js/springboard-route-guard.js"></script>
-    <script>
-        function r() {
-            return Math.floor(Math.random() * 20) + 235;
-        }
+<!-- The core Firebase JS SDK is always required and must be listed first -->
+<script src="https://www.gstatic.com/firebasejs/6.2.4/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/6.2.4/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/6.2.4/firebase-firestore.js"></script>
+<script src="js/springboard.js"></script>
+<script src="js/springboard-route-guard.js"></script>
+<script>
+    function r() {
+        return Math.floor(Math.random() * 20) + 235;
+    }
 
-        document.querySelector("#new-project").addEventListener("click", async e => {
-            const {
-                uid
-            } = firebase.auth().currentUser;
-            const projectRef = firebase.firestore().collection('projects').doc();
-            const userRef = firebase.firestore().doc(`users/${uid}`);
-            const batch = firebase.firestore().batch();
-            const defaultProject = {
-                elements: [],
-                name: psrompt("Project name (keep it short and memorable)"),
-                desc: prompt("Project description"),
-                ids: [firebase.auth().currentUser.uid]
-            };
-            batch.set(projectRef, defaultProject);
-            batch.update(userRef, {
+    document.querySelector("#new-project").addEventListener("click", async e => {
+        const {
+            uid
+        } = firebase.auth().currentUser;
+        const projectRef = firebase.firestore().collection('projects').doc();
+        const userRef = firebase.firestore().doc(`users/${uid}`);
+        const batch = firebase.firestore().batch();
+        const defaultProject = {
+            elements: [],
+            name: prompt("Project name (keep it short and memorable)"),
+            desc: prompt("Project description"),
+            ids: [firebase.auth().currentUser.uid]
+        };
+        batch.set(projectRef, defaultProject);
+        batch.update(userRef, {
+            projects: firebase.firestore.FieldValue.arrayUnion({
+                color: `rgb(${r()}, ${r()}, ${r()})`,
+                name: defaultProject.name,
+                desc: defaultProject.desc,
+                id: projectRef.id
+            })
+        });
+        await batch.commit();
+    });
+
+    document.querySelector("#add-project").addEventListener("click", async e => {
+        const {uid} = firebase.auth().currentUser;
+        const projectId = prompt("Project Id (from project owner)");
+
+        const projectRef = firebase.firestore().doc(`projects/${projectId}`);
+        const userRef = firebase.firestore().doc(`users/${uid}`);
+
+        await firebase.firestore().runTransaction(async transaction => {
+            const snapshot = await transaction.get(projectRef);
+            if (snapshot.exists === false) {
+                throw "Project does not exist!";
+                return;
+            }
+            const {name, desc} = snapshot.data();
+            transaction.update(projectRef, {
+                ids: firebase.firestore.FieldValue.arrayUnion(uid)
+            });
+            transaction.update(userRef, {
                 projects: firebase.firestore.FieldValue.arrayUnion({
                     color: `rgb(${r()}, ${r()}, ${r()})`,
-                    name: defaultProject.name,
-                    desc: defaultProject.desc,
-                    id: projectRef.id
+                    name, desc, id: projectId
                 })
             });
-            await batch.commit();
+        });
+    });
+</script>
+<script>
+    function createProjectElement({
+                                      color,
+                                      name,
+                                      desc,
+                                      id
+                                  }) {
+        const nameElement = document.createElement("h3");
+        nameElement.textContent = name;
+
+        const description = document.createElement("p");
+        description.textContent = desc;
+
+        const deleteElement = document.createElement("i");
+        deleteElement.classList.add("fa", "fa-trash");
+        4
+        deleteElement.addEventListener("click", async e => {
+            const batch = firebase.firestore().batch();
         });
 
-        document.querySelector("#add-project").addEventListener("click", async e => {
-            const {uid} = firebase.auth().currentUser;
-            const projectId = prompt("Project Id (from project owner)");
+        const container = document.createElement("div");
+        container.append(deleteElement, nameElement, description);
 
-            const projectRef = firebase.firestore().doc(`projects/${projectId}`);
-            const userRef = firebase.firestore().doc(`users/${uid}`);
-            
-            await firebase.firestore().runTransaction(async transaction => {
-                const snapshot = await transaction.get(projectRef);
-                if (snapshot.exists === false) {
-                    throw "Project does not exist!";
-                    return;
-                }
-                const {name, desc} = snapshot.data();
-                transaction.update(projectRef, {
-                    ids: firebase.firestore.FieldValue.arrayUnion(uid)
-                });
-                transaction.update(userRef, {
-                    projects: firebase.firestore.FieldValue.arrayUnion({
-                        color: `rgb(${r()}, ${r()}, ${r()})`,
-                        name, desc, id: projectId
-                    })
-                });
-            }); 
-        });
-    </script>
-    <script>
-        function createProjectElement({
-            color,
-            name,
-            desc,
-            id
-        }) {
-            const nameElement = document.createElement("h3");
-            nameElement.textContent = name;
+        const link = document.createElement("a");
+        link.style.backgroundColor = color || `rgb(${r()}, ${r()}, ${r()})`;
+        link.classList.add("project");
+        link.href = `editor.html#${id}`;
+        link.append(container);
+        return link;
+    }
 
-            const description = document.createElement("p");
-            description.textContent = desc;
-
-            const deleteElement = document.createElement("i");
-            deleteElement.classList.add("fa", "fa-trash");4
-            deleteElement.addEventListener("click", async e => {
-                const batch = firebase.firestore().batch();
-            });
-
-            const container = document.createElement("div");
-            container.append(deleteElement, nameElement, description);
-
-            const link = document.createElement("a");
-            link.style.backgroundColor = color || `rgb(${r()}, ${r()}, ${r()})`;
-            link.classList.add("project");
-            link.href = `editor.html#${id}`;
-            link.append(container);
-            return link;
-        }
-
-        async function getProjects() {
+    async function getProjects() {
+        const {
+            email,
+            uid
+        } = firebase.auth().currentUser;
+        const defaultProfile = {
+            name: email,
+            projects: []
+        };
+        const profileRef = firebase.firestore().doc(`users/${uid}`);
+        profileRef.onSnapshot(snapshot => {
+            if (snapshot.exists === false) {
+                profileRef.set(defaultProfile);
+            }
             const {
-                email,
-                uid
-            } = firebase.auth().currentUser;
-            const defaultProfile = {
-                name: email,
-                projects: []
-            };
-            const profileRef = firebase.firestore().doc(`users/${uid}`);
-            profileRef.onSnapshot(snapshot => {
-                if (snapshot.exists === false) {
-                    profileRef.set(defaultProfile);
-                }
-                const {
-                    name,
-                    projects
-                } = snapshot.data() || defaultProfile;
-                const projectsElement = document.querySelector("#projects");
-                while (projectsElement.firstChild) {
-                    projectsElement.removeChild(projectsElement.firstChild);
-                }
-                projects.map(createProjectElement).forEach(element => {
-                    projectsElement.append(element)
-                });
+                name,
+                projects
+            } = snapshot.data() || defaultProfile;
+            const projectsElement = document.querySelector("#projects");
+            while (projectsElement.firstChild) {
+                projectsElement.removeChild(projectsElement.firstChild);
+            }
+            projects.map(createProjectElement).forEach(element => {
+                projectsElement.append(element)
             });
-        }
+        });
+    }
 
-        async function start() {
-            const user = await firebase.auth.authSignIn;
-            await getProjects();
-        }
-        start();
-    </script>
+    async function start() {
+        const user = await firebase.auth.authSignIn;
+        await getProjects();
+    }
+
+    start();
+</script>
 </body>
 
 </html>

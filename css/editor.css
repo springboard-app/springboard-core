@@ -1,0 +1,37 @@
+#progress-container {
+    background-color: #eeeeee;
+    flex-grow: 1;
+    height: 3px;
+}
+
+#progress {
+    min-height: 3px;
+    width: 0;
+}
+
+#data-input-row {
+    align-items: center;
+    display: flex;
+}
+
+#data-input-row > * {
+    margin: 0 15px;
+}
+
+#data-input-row div {
+    flex-grow: 1;
+}
+
+body {
+    padding: 35px;
+}
+
+.classifier-row > div {
+    align-items: start;
+    display: flex;
+    margin: 15px;
+}
+
+.classifier-row label {
+    width: 200px;
+}

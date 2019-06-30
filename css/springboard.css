@@ -9,18 +9,22 @@ body {
     margin: 0;
 }
 
-.header {
+.header, header {
     align-items: center;
     display: flex;
 }
 
-.header h1 {
+.header, header h1 {
     flex-grow: 1;
 }
 
 button {
-    border: none;
     cursor: pointer;
+    border: none;
+}
+
+button, select {
+    margin: 0 10px;
     padding: 10px 20px;
     text-transform: uppercase;
 }

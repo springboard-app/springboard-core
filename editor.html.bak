@@ -1,0 +1,149 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Editor</title>
+</head>
+<style>
+    body {
+        padding: 1em
+    }
+
+    .top {
+        padding-bottom: 1em;
+    }
+
+    .step {
+        border: .1em solid #ccc;
+        border-radius: 1em;
+        padding: 1em;
+        margin-bottom: 1em;
+    }
+</style>
+<link href="css/springboard.css" rel="stylesheet">
+
+
+<body>
+<header>
+    <h1 id="project-name"></h1>
+    <select id="step-name">
+        <option value="Data">Data</option>
+        <option value="Process">Process</option>
+        <option value="Dimensionality Reduction"> Dimenisonality Reduction</option>
+        <option value="Classifier">Classify</option>
+        <option value="Regressor">Regression</option>
+    </select>
+
+    <button id="add-step">Submit</button>
+</header>
+
+<div id="steps">
+</div>
+
+
+<script src="https://www.gstatic.com/firebasejs/6.2.4/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/6.2.4/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/6.2.4/firebase-firestore.js"></script>
+<script src="js/springboard.js" charset="utf-8"></script>
+<script src="js/springboard-route-guard.js" charset="utf-8"></script>
+
+<script>
+    const projectId = location.hash.slice(1);
+    document.querySelector("#add-step").addEventListener("click", async e => {
+        const stepType = document.querySelector("#step-name").value;
+        const db = firebase.firestore();
+        db.doc(`projects/${projectId}`).update({
+            elements: firebase.firestore.FieldValue.arrayUnion({
+                type: stepType
+            })
+        })
+    });
+</script>
+
+<script type="text/javascript">
+    const steps = document.getElementById("steps");
+    function initEditor() {
+        function newStep(name) {
+            const step = document.createElement("div");
+            step.id = name;
+            step.classList.add("step");
+
+            const heading = document.createElement("h3");
+            heading.textContent = name;
+
+            step.append(heading, ...generateStepInputs(name));
+            steps.append(step);
+        }
+
+        const stepMap = {
+            Data: [{
+                label: "Data",
+                type: "file"
+            }],
+            Classifier: [
+                {
+                    label: "Classifier",
+                    type: "select",
+                    options: ["Support Vector Machine", "Neural Network", "Naive Bayes", "Gaussian Process Classifier", "RBF", "Decision Tree Classifier", "Random Forest Classifier", "Ada Boost Classifier", "Quadratic Discriminant Analysis", "K Neighbors Classifier"]
+                }
+            ],
+            Regressor: [
+                {
+                    label: "Regress",
+                    type: "select",
+                    options: ["Support Vector Machine", "Neural Network", "Random Forest Regressor", "Linear Regression", "Ridge", "Decision Tree Regressor"]
+
+                }
+            ],
+            "Dimensionality Reduction": [
+                {
+                    label: "Dimensionality Reduction",
+                    type: "select",
+                    options: ["test1", "test2"]
+                }
+            ]
+        };
+
+        const generateStepInputs = function (stepValue) {
+            return stepMap[stepValue].map(desc => {
+                if (desc.label) {
+                    const label = document.createElement("label")
+                    label.textContent = desc.label
+                }
+                let input;
+                if (desc.type === "select") {
+                    input = document.createElement("select")
+                    desc.options.forEach(option => {
+                        const optionElement = document.createElement("option");
+                        optionElement.textContent = optionElement.value = option;
+                        input.append(optionElement);
+                    });
+                } else {
+                    input = document.createElement("input");
+                    Object.assign(input, desc);
+                }
+                const fragment = document.createDocumentFragment()
+                fragment.append(desc.label, input)
+                return fragment
+            });
+        };
+
+        firebase.firestore().doc("projects/" + location.hash.slice(1)).onSnapshot(function (snapshot) {
+            let {name} = snapshot.data();
+            document.querySelector("#project-name").textContent = name;
+        });
+    }
+
+    async function start() {
+        const user = await firebase.auth.authSignIn;
+        await initEditor();
+        var steps = document.getElementById("steps");
+    }
+    start();
+</script>
+
+
+</body>
+
+</html>

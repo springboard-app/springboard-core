@@ -1,132 +1,174 @@
-<!doctype html>
-<html>
-
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <title>Editor</title>
-  <script src="https://www.gstatic.com/firebasejs/6.2.4/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/6.2.4/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/6.2.4/firebase-firestore.js"></script>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Springboard</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/springboard.css">
+    <link rel="stylesheet" href="css/editor.css">
+    <!--suppress JSUnresolvedLibraryURL -->
+    <script src="https://kit.fontawesome.com/a31215805a.js"></script>
 </head>
-<style>
-  body {
-    padding: 1em
-  }
-
-  .top {
-    padding-bottom: 1em;
-  }
-
-  .step {
-    border: .1em solid #ccc;
-    border-radius: 1em;
-    padding: 1em;
-    margin-bottom: 1em;
-  }
-</style>
-<link href="css/springboard.css" rel="stylesheet">
-</link>
-
 
 <body>
-  <header>
-    <select id="sel">
-      <option value="Data">Data</option>
-      <option value="Process">Process</option>
-      <option value="Dimensionality Reduction"> Dimenisonality Reduction </option>
-      <option value="Classifier">Classify</option>
-      <option value="Regressor">Regression</option>
-    </select>
+<div class="header">
+    <h1 id="project-name">Project</h1>
+    <button id="run">Run Project</button>
+    <button id="save">Save</button>
+</div>
+<div id="project">
+    <h1>Workflow</h1>
+    <div class="step">
+        <h2>Import data</h2>
+        <div id="data-input-row">
+            <input id="file-input" type="file">
+            <label for="progress">Upload progress</label>
+            <div id="progress-container">
+                <div id="progress"></div>
+            </div>
+        </div>
+    </div>
+    <div class="step">
+        <h2>Classifier</h2>
+        <p>Configure your workflow's parameters</p>
+        <div class="classifier-row">
+            <div>
+                <label for="inputs">Inputs</label><select id="inputs" multiple></select>
+            </div>
+            <div>
+                <label for="output">Output</label><select name="output" id="output"></select>
+            </div>
+            <div>
+                <label for="training">
+                    Training data
+                </label>
+                <input id="training" type="range" min="0" max="100" value="80">
+            </div>
+        </div>
+    </div>
+</div>
 
-    <button type="submit" name="button" onclick="newStep(document.getElementById('sel').value)">Submit</button>
-  </header>
+<!-- The core Firebase JS SDK is always required and must be listed first -->
+<script src="https://www.gstatic.com/firebasejs/6.2.4/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/6.2.4/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/6.2.4/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/6.2.4/firebase-storage.js"></script>
+<script src="js/springboard.js"></script>
+<script src="js/springboard-route-guard.js"></script>
+<script src="js/papaparse.min.js"></script>
+<script>
+    const inputs = document.querySelector("#inputs");
+    const output = document.querySelector("#output");
+    const trainingPercent = document.querySelector("#training");
 
-  <div id="steps">
-  </div>
+    let fields;
 
+    document.querySelector("#file-input").addEventListener("change", function (e) {
+        const progressElement = document.getElementById("progress");
+        if (e.target.files.length) {
+            const ref = firebase.storage().ref();
+            const uploadTask = ref.child(projectId).put(e.target.files[0]);
+            uploadTask.on('state_changed', function(snapshot){
+                // Observe state change events such as progress, pause, and resume
+                // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
+                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                progressElement.style.width = `${progress}%`;
+                switch (snapshot.state) {
+                    case firebase.storage.TaskState.PAUSED: // or 'paused'
+                        progressElement.style.backgroundColor = "grey";
+                        break;
+                    case firebase.storage.TaskState.RUNNING: // or 'running'
+                        progressElement.style.backgroundColor = "dodgerblue";
+                        break;
+                }
+            }, function(error) {
+                progressElement.style.backgroundColor = "red";
+                progressElement.style.width = `0`;
+                console.error(error);
+            }, function() {
+                progressElement.style.backgroundColor = "green";
+                Papa.parse(e.target.files[0], {
+                    complete({meta}) {
+                        fields = meta.fields;
+                        const inputs = meta.fields.map(field => {
+                            const option = document.createElement("option");
+                            option.textContent = field;
+                            return option;
+                        });
+                        document.querySelector("#inputs").append(...inputs);
+                        const outputs = meta.fields.map(field => {
+                            const option = document.createElement("option");
+                            option.textContent = field;
+                            return option;
+                        });
+                        document.querySelector("#output").append(...outputs);
+                    },
+                    header: true,
+                    preview: 1,
+                    skipEmptyLines: true
+                });
+            });
+        }
+    });
 
-  <script src="js/springboard.js" charset="utf-8"></script>
-  <script src="js/springboard-route-guard.js" charset="utf-8"></script>
+    document.querySelector("#save").addEventListener("click", async e => {
+        const projectRef = db.doc(`projects/${projectId}`);
+        try {
+            await projectRef.update({
+                params: {
+                    fields: fields,
+                    inputs: inputs.value,
+                    output: output.value,
+                    trainingPercent: parseInt(trainingPercent.value)
+                }
+            });
+            e.target.style.background = "green";
+        } catch (error) {
+            e.target.style.background = "red";
+            console.error(error);
+        }
+        setTimeout(() => {
+            e.target.style.background = "";
+        }, 1000);
+    });
 
-  <script type="text/javascript">
-    function initEditor() {
-      firebase.firestore().doc("projects/" + location.hash.slice(1)).onSnapshot(function (snapshot) {
-        console.debug(snapshot.data())
-      });
+    const projectId = location.hash.slice(1);
+    const db = firebase.firestore();
+    async function initializeEditor() {
+        db.doc(`projects/${projectId}`).onSnapshot(snapshot => {
+            const {name, params} = snapshot.data();
+            fields = params.fields || [];
+            document.querySelector("#project-name").textContent = name;
+            while (inputs.firstChild) inputs.removeChild(inputs.firstChild);
+            while (output.firstChild) output.removeChild(output.firstChild);
+            const inputsOptions = fields.map(field => {
+                const option = document.createElement("option");
+                option.textContent = field;
+                return option;
+            });
+            document.querySelector("#inputs").append(...inputsOptions);
+            const outputOptions = fields.map(field => {
+                const option = document.createElement("option");
+                option.textContent = field;
+                return option;
+            });
+            document.querySelector("#output").append(...outputOptions);
+            inputs.value = params.inputs;
+            output.value = params.output;
+            trainingPercent.value = params.trainingPercent;
+            return snapshot;
+        });
     }
+
     async function start() {
-      const user = await firebase.auth.authSignIn;
-      await initEditor();
-      var steps = document.getElementById("steps");
-    }
-    function newStep(name) {
-      var step = document.createElement("div");
-      step.id = name
-      step.classList.add("step");
-
-      var heading = document.createElement("h3");
-      heading.textContent = name;
-
-      step.append(heading, ...generateStepInputs(name))
-      steps.append(step);
+        const user = await firebase.auth.authSignIn;
+        await initializeEditor();
     }
 
-    const stepMap = {
-      Data: [{
-        label: "Data",
-        type: "file"
-      }],
-      Classifier: [
-        {
-          label: "Classifier",
-          type: "select",
-          options: ["Support Vector Machine", "Neural Network", "Naive Bayes", "Gaussian Process Classifier", "RBF", "Decision Tree Classifier", "Random Forest Classifier", "Ada Boost Classifier", "Quadratic Discriminant Analysis", "K Neighbors Classifier"]
-        }
-      ],
-      Regressor: [
-        {
-          label: "Regress",
-          type: "select",
-          options: ["Support Vector Machine", "Neural Network", "Random Forest Regressor", "Linear Regression", "Ridge", "Decision Tree Regressor"]
-
-        }
-      ],
-      "Dimensionality Reduction": [
-        {
-          label: "Dimensionality Reduction",
-          type: "select",
-          options: ["test1", "test2"]
-        }
-      ]
-    };
-
-    const generateStepInputs = function (stepValue) {
-      return stepMap[stepValue].map(desc => {
-        if (desc.label) {
-          const label = document.createElement("label")
-          label.textContent = desc.label
-        }
-        var inpt;
-        if (desc.type == "select") {
-          inpt = document.createElement("select")
-          desc.options.forEach(option => {
-            const optionElement = document.createElement("option");
-            optionElement.textContent = optionElement.value = option;
-            inpt.append(optionElement);
-          });
-        }
-        else {
-          inpt = document.createElement("input");
-          Object.assign(inpt, desc);
-        }
-        const fragment = document.createDocumentFragment()
-        fragment.append(desc.label, inpt)
-        return fragment
-      });
-    }
-  </script>
-
-
-
+    start();
+</script>
 </body>
 
 </html>
